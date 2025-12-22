@@ -3,6 +3,8 @@ import { ENV } from "./lib/env.js";
 import path from "path";
 import { connectDB } from "./lib/db.js";
 import { inngest } from "./lib/inngest.js";
+import cors from "cors";
+
 const app = express();
 
 const __dirname = path.resolve();
