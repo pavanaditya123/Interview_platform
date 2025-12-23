@@ -3,13 +3,14 @@ import { ENV } from "./env.js"
 
 
 const apiKey = ENV.STREAM_API_KEY
-const api_secret = ENV.STREAM_SECRET_KEY
+const apiSecret = ENV.STREAM_API_SECRET
 
-if (!apiKey || !api_secret) {
+
+if (!apiKey || !apiSecret) {
     console.error("Stream_api_key or secret key is missing ");
 }
 
-export const chatClient = StreamChat.getInstance(apiKey, api_secret);
+export const chatClient = StreamChat.getInstance(apiKey, apiSecret);
 
 export const upsertStreamUser = async (userData) => {
     try {
