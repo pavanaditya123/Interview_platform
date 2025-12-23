@@ -9,6 +9,8 @@ import { functions } from "./lib/inngest.js";
 import { clerkMiddleware } from '@clerk/express';
 import { protectRoute } from './middleware/protectRoute.js';
 import chatRoutes from './routes/chatRoutes.js';
+import sessionRoutes from './routes/sessionRoutes.js';
+
 const app = express();
 const __dirname = path.resolve();
 
@@ -22,6 +24,7 @@ app.use(clerkMiddleware());//this adds auth field to request object
 // inngest
 app.use("/api/inngest", serve({ client: inngest, functions }));
 app.use("api/chat", chatRoutes);
+app.use("api/sessions", sessionRoutes);
 app.get("/video-calls", protectRoute, (req, res) => {
 
     res.status(200).json({ msg: "this is the protected endpoint " });
