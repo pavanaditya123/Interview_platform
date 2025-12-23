@@ -1,45 +1,46 @@
 import express from "express";
-import { ENV } from "./lib/env.js";
+import cors from "cors";
 import path from "path";
+import { ENV } from "./lib/env.js";
 import { connectDB } from "./lib/db.js";
 import { inngest } from "./lib/inngest.js";
-const app = express();
+import { serve } from "inngest/express";
+import { functions } from "./lib/inngest.js";
 
+const app = express();
 const __dirname = path.resolve();
 
-//middlewares
+// middlewares
 app.use(express.json());
-app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
+app.use(cors({
+    origin: ENV.CLIENT_URL,
+    credentials: true,
+}));
 
-app.use("/api/ingest", serve({ client: inngest, functions }));
-if (ENV.NODE_ENV == "production") {
+// inngest
+app.use("/api/inngest", serve({ client: inngest, functions }));
+
+// production frontend
+if (ENV.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "../frontend/dist")));
-    app.get("/{*any}", (req, res) => {
-        res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+
+    app.use((req, res) => {
+        res.sendFile(
+            path.join(__dirname, "../frontend/dist/index.html")
+        );
     });
-
 }
 
-//make our app ready for deployment
-app.listen(ENV.PORT, () => {
-    console.log("server is running on the port", ENV.PORT);
-    connectDB();
-}
-);
-
-
+// start server
 const startServer = async () => {
     try {
         await connectDB();
-        app.listen(ENV.PORT, () =>
-            console.log("server is running on the port", ENV.PORT));
+        app.listen(ENV.PORT, () => {
+            console.log("Server running on port", ENV.PORT);
+        });
+    } catch (error) {
+        console.error("Error starting server:", error);
     }
-
-    catch (error) {
-        console.error("error starting the server ", error)
-    }
-}
-
-
+};
 
 startServer();
