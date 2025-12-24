@@ -5,6 +5,7 @@ import App from './App.jsx'
 import { ClerkProvider } from "@clerk/clerk-react"
 import { BrowserRouter } from "react-router";
 import { QueryClient } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
 if (!PUBLISHABLE_KEY) {
