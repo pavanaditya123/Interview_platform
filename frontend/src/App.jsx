@@ -14,7 +14,6 @@ import { Toaster } from "react-hot-toast";
 import DashBoardPage from "./pages/DashBoardPage";
 function App() {
     const { isSignedIn, isLoaded } = useUser();
-    //this will get rid of flikkiring effect
     if (!isLoaded) {
         return null;
     }
