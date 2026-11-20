@@ -181,7 +181,8 @@ describe("sessions", () => {
         const end = await request(app).post(`/api/sessions/${id}/end`).set(as("host_1"));
         expect(end.status).toBe(200);
         expect(end.body.session.status).toBe("completed");
-        expect(__mocks.call.delete).toHaveBeenCalledWith({ hard: true });
+        expect(__mocks.call.end).toHaveBeenCalledOnce(); // ended, not deleted, so recordings survive
+        expect(__mocks.call.delete).not.toHaveBeenCalled();
 
         expect((await request(app).post(`/api/sessions/${id}/end`).set(as("host_1"))).status).toBe(400);
         expect((await request(app).post(`/api/sessions/${id}/join`).set(as("guest_2"))).status).toBe(400);
@@ -197,7 +198,7 @@ describe("sessions", () => {
 
     it("still ends the session when Stream cleanup fails", async () => {
         const { body } = await createSession();
-        __mocks.call.delete.mockRejectedValueOnce(new Error("gone"));
+        __mocks.call.end.mockRejectedValueOnce(new Error("gone"));
         const end = await request(app).post(`/api/sessions/${body.session._id}/end`).set(as("host_1"));
         expect(end.status).toBe(200);
     });

@@ -15,4 +15,9 @@ export const ENV = {
     // Self-hosted Piston instance (the public emkc.org API is whitelist-only since Feb 2026).
     // Only needed for Java; JavaScript and Python run in the browser.
     PISTON_API_URL: process.env.PISTON_API_URL || "",
+    // AI hints / code review: set ONE of these (Groq is preferred when both are set). Both have free tiers.
+    GROQ_API_KEY: process.env.GROQ_API_KEY || "",
+    GROQ_MODEL: process.env.GROQ_MODEL || "openai/gpt-oss-120b",
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",
+    GEMINI_MODEL: process.env.GEMINI_MODEL || "gemini-3.8-flash",
 };

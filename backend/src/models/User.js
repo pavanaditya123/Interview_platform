@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
+        // Practice problems the user has solved (synced across devices)
+        solvedProblems: {
+            type: [String],
+            default: [],
+        },
     },
     { timestamps: true }
 );
