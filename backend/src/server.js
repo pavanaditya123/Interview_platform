@@ -1,54 +1,33 @@
-import express from "express";
-import cors from "cors";
-import path from "path";
+import { createApp } from "./app.js";
 import { ENV } from "./lib/env.js";
-import { connectDB } from "./lib/db.js";
-import { inngest } from "./lib/inngest.js";
-import { serve } from "inngest/express";
-import { functions } from "./lib/inngest.js";
-import { clerkMiddleware } from '@clerk/express';
-import { protectRoute } from './middleware/protectRoute.js';
-import chatRoutes from './routes/chatRoutes.js';
-import sessionRoutes from './routes/sessionRoutes.js';
+import { connectDB, disconnectDB } from "./lib/db.js";
 
-const app = express();
-const __dirname = path.resolve();
+const app = createApp();
 
-// middlewares
-app.use(express.json());
-app.use(cors({
-    origin: ENV.CLIENT_URL,
-    credentials: true,
-}));
-app.use(clerkMiddleware());//this adds auth field to request object
-// inngest
-app.use("/api/inngest", serve({ client: inngest, functions }));
-app.use("api/chat", chatRoutes);
-app.use("api/sessions", sessionRoutes);
-app.get("/video-calls", protectRoute, (req, res) => {
-
-    res.status(200).json({ msg: "this is the protected endpoint " });
-});
-// production frontend
-if (ENV.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../frontend/dist")));
-
-    app.use((req, res) => {
-        res.sendFile(
-            path.join(__dirname, "../frontend/dist/index.html")
-        );
-    });
-}
-
-// start server
 const startServer = async () => {
     try {
         await connectDB();
-        app.listen(ENV.PORT, () => {
+        const server = app.listen(ENV.PORT, () => {
             console.log("Server running on port", ENV.PORT);
         });
+
+        // Keep-alive slightly above typical load balancer idle timeouts to avoid 502s.
+        server.keepAliveTimeout = 65000;
+        server.headersTimeout = 66000;
+
+        const shutdown = (signal) => {
+            console.log(`${signal} received, shutting down gracefully`);
+            server.close(async () => {
+                await disconnectDB();
+                process.exit(0);
+            });
+            setTimeout(() => process.exit(1), 10000).unref();
+        };
+        process.on("SIGTERM", () => shutdown("SIGTERM"));
+        process.on("SIGINT", () => shutdown("SIGINT"));
     } catch (error) {
         console.error("Error starting server:", error);
+        process.exit(1);
     }
 };
 

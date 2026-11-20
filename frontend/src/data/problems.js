@@ -339,6 +339,296 @@ print(maxArea([1,1]))  # Expected: 1`,
             java: "49\n1",
         },
     },
+    "valid-parentheses": {
+        id: "valid-parentheses",
+        title: "Valid Parentheses",
+        difficulty: "Easy",
+        category: "String • Stack",
+        description: {
+            text: "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.",
+            notes: [
+                "Open brackets must be closed by the same type of brackets.",
+                "Open brackets must be closed in the correct order.",
+                "Every close bracket has a corresponding open bracket of the same type.",
+            ],
+        },
+        examples: [
+            { input: 's = "()"', output: "true" },
+            { input: 's = "()[]{}"', output: "true" },
+            { input: 's = "(]"', output: "false" },
+            { input: 's = "([)]"', output: "false", explanation: "Brackets are closed in the wrong order." },
+        ],
+        constraints: ["1 ≤ s.length ≤ 10⁴", "s consists of parentheses only '()[]{}'"],
+        starterCode: {
+            javascript: `function isValid(s) {
+  // Write your solution here
+
+}
+
+// Test cases
+console.log(isValid("()")); // Expected: true
+console.log(isValid("()[]{}")); // Expected: true
+console.log(isValid("(]")); // Expected: false
+console.log(isValid("([)]")); // Expected: false
+console.log(isValid("{[]}")); // Expected: true`,
+            python: `def isValid(s):
+    # Write your solution here
+    pass
+
+# Test cases
+print(isValid("()"))  # Expected: True
+print(isValid("()[]{}"))  # Expected: True
+print(isValid("(]"))  # Expected: False
+print(isValid("([)]"))  # Expected: False
+print(isValid("{[]}"))  # Expected: True`,
+            java: `import java.util.*;
+
+class Solution {
+    public static boolean isValid(String s) {
+        // Write your solution here
+
+        return false;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(isValid("()")); // Expected: true
+        System.out.println(isValid("()[]{}")); // Expected: true
+        System.out.println(isValid("(]")); // Expected: false
+        System.out.println(isValid("([)]")); // Expected: false
+        System.out.println(isValid("{[]}")); // Expected: true
+    }
+}`,
+        },
+        expectedOutput: {
+            javascript: "true\ntrue\nfalse\nfalse\ntrue",
+            python: "True\nTrue\nFalse\nFalse\nTrue",
+            java: "true\ntrue\nfalse\nfalse\ntrue",
+        },
+    },
+
+    "best-time-to-buy-and-sell-stock": {
+        id: "best-time-to-buy-and-sell-stock",
+        title: "Best Time to Buy and Sell Stock",
+        difficulty: "Easy",
+        category: "Array • Dynamic Programming",
+        description: {
+            text: "You are given an array prices where prices[i] is the price of a given stock on the ith day. You want to maximize your profit by choosing a single day to buy one stock and choosing a different day in the future to sell that stock.",
+            notes: ["Return the maximum profit you can achieve from this transaction. If you cannot achieve any profit, return 0."],
+        },
+        examples: [
+            {
+                input: "prices = [7,1,5,3,6,4]",
+                output: "5",
+                explanation: "Buy on day 2 (price = 1) and sell on day 5 (price = 6), profit = 6 - 1 = 5.",
+            },
+            { input: "prices = [7,6,4,3,1]", output: "0", explanation: "No transaction is done, the max profit = 0." },
+        ],
+        constraints: ["1 ≤ prices.length ≤ 10⁵", "0 ≤ prices[i] ≤ 10⁴"],
+        starterCode: {
+            javascript: `function maxProfit(prices) {
+  // Write your solution here
+
+}
+
+// Test cases
+console.log(maxProfit([7, 1, 5, 3, 6, 4])); // Expected: 5
+console.log(maxProfit([7, 6, 4, 3, 1])); // Expected: 0`,
+            python: `def maxProfit(prices):
+    # Write your solution here
+    pass
+
+# Test cases
+print(maxProfit([7, 1, 5, 3, 6, 4]))  # Expected: 5
+print(maxProfit([7, 6, 4, 3, 1]))  # Expected: 0`,
+            java: `class Solution {
+    public static int maxProfit(int[] prices) {
+        // Write your solution here
+
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(maxProfit(new int[]{7, 1, 5, 3, 6, 4})); // Expected: 5
+        System.out.println(maxProfit(new int[]{7, 6, 4, 3, 1})); // Expected: 0
+    }
+}`,
+        },
+        expectedOutput: {
+            javascript: "5\n0",
+            python: "5\n0",
+            java: "5\n0",
+        },
+    },
+
+    "longest-substring-without-repeating-characters": {
+        id: "longest-substring-without-repeating-characters",
+        title: "Longest Substring Without Repeating Characters",
+        difficulty: "Medium",
+        category: "String • Sliding Window • Hash Table",
+        description: {
+            text: "Given a string s, find the length of the longest substring without repeating characters.",
+            notes: ["A substring is a contiguous non-empty sequence of characters within a string."],
+        },
+        examples: [
+            { input: 's = "abcabcbb"', output: "3", explanation: 'The answer is "abc", with the length of 3.' },
+            { input: 's = "bbbbb"', output: "1", explanation: 'The answer is "b", with the length of 1.' },
+            {
+                input: 's = "pwwkew"',
+                output: "3",
+                explanation: 'The answer is "wke". Note that "pwke" is a subsequence, not a substring.',
+            },
+        ],
+        constraints: ["0 ≤ s.length ≤ 5 * 10⁴", "s consists of English letters, digits, symbols and spaces"],
+        starterCode: {
+            javascript: `function lengthOfLongestSubstring(s) {
+  // Write your solution here
+
+}
+
+// Test cases
+console.log(lengthOfLongestSubstring("abcabcbb")); // Expected: 3
+console.log(lengthOfLongestSubstring("bbbbb")); // Expected: 1
+console.log(lengthOfLongestSubstring("pwwkew")); // Expected: 3`,
+            python: `def lengthOfLongestSubstring(s):
+    # Write your solution here
+    pass
+
+# Test cases
+print(lengthOfLongestSubstring("abcabcbb"))  # Expected: 3
+print(lengthOfLongestSubstring("bbbbb"))  # Expected: 1
+print(lengthOfLongestSubstring("pwwkew"))  # Expected: 3`,
+            java: `import java.util.*;
+
+class Solution {
+    public static int lengthOfLongestSubstring(String s) {
+        // Write your solution here
+
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(lengthOfLongestSubstring("abcabcbb")); // Expected: 3
+        System.out.println(lengthOfLongestSubstring("bbbbb")); // Expected: 1
+        System.out.println(lengthOfLongestSubstring("pwwkew")); // Expected: 3
+    }
+}`,
+        },
+        expectedOutput: {
+            javascript: "3\n1\n3",
+            python: "3\n1\n3",
+            java: "3\n1\n3",
+        },
+    },
+
+    "merge-intervals": {
+        id: "merge-intervals",
+        title: "Merge Intervals",
+        difficulty: "Medium",
+        category: "Array • Sorting",
+        description: {
+            text: "Given an array of intervals where intervals[i] = [start, end], merge all overlapping intervals, and return an array of the non-overlapping intervals that cover all the intervals in the input.",
+            notes: ["Return the merged intervals sorted by start time."],
+        },
+        examples: [
+            {
+                input: "intervals = [[1,3],[2,6],[8,10],[15,18]]",
+                output: "[[1,6],[8,10],[15,18]]",
+                explanation: "Since intervals [1,3] and [2,6] overlap, merge them into [1,6].",
+            },
+            { input: "intervals = [[1,4],[4,5]]", output: "[[1,5]]", explanation: "Intervals [1,4] and [4,5] are considered overlapping." },
+        ],
+        constraints: ["1 ≤ intervals.length ≤ 10⁴", "intervals[i].length == 2", "0 ≤ start ≤ end ≤ 10⁴"],
+        starterCode: {
+            javascript: `function merge(intervals) {
+  // Write your solution here
+
+}
+
+// Test cases
+console.log(merge([[1, 3], [2, 6], [8, 10], [15, 18]])); // Expected: [[1,6],[8,10],[15,18]]
+console.log(merge([[1, 4], [4, 5]])); // Expected: [[1,5]]`,
+            python: `def merge(intervals):
+    # Write your solution here
+    pass
+
+# Test cases
+print(merge([[1, 3], [2, 6], [8, 10], [15, 18]]))  # Expected: [[1, 6], [8, 10], [15, 18]]
+print(merge([[1, 4], [4, 5]]))  # Expected: [[1, 5]]`,
+            java: `import java.util.*;
+
+class Solution {
+    public static int[][] merge(int[][] intervals) {
+        // Write your solution here
+
+        return new int[0][];
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Arrays.deepToString(merge(new int[][]{{1, 3}, {2, 6}, {8, 10}, {15, 18}}))); // Expected: [[1, 6], [8, 10], [15, 18]]
+        System.out.println(Arrays.deepToString(merge(new int[][]{{1, 4}, {4, 5}}))); // Expected: [[1, 5]]
+    }
+}`,
+        },
+        expectedOutput: {
+            javascript: "[[1,6],[8,10],[15,18]]\n[[1,5]]",
+            python: "[[1, 6], [8, 10], [15, 18]]\n[[1, 5]]",
+            java: "[[1, 6], [8, 10], [15, 18]]\n[[1, 5]]",
+        },
+    },
+
+    "trapping-rain-water": {
+        id: "trapping-rain-water",
+        title: "Trapping Rain Water",
+        difficulty: "Hard",
+        category: "Array • Two Pointers • Stack",
+        description: {
+            text: "Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.",
+            notes: ["Try to solve it in O(n) time and O(1) extra space."],
+        },
+        examples: [
+            {
+                input: "height = [0,1,0,2,1,0,1,3,2,1,2,1]",
+                output: "6",
+                explanation: "The elevation map traps 6 units of rain water.",
+            },
+            { input: "height = [4,2,0,3,2,5]", output: "9" },
+        ],
+        constraints: ["n == height.length", "1 ≤ n ≤ 2 * 10⁴", "0 ≤ height[i] ≤ 10⁵"],
+        starterCode: {
+            javascript: `function trap(height) {
+  // Write your solution here
+
+}
+
+// Test cases
+console.log(trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])); // Expected: 6
+console.log(trap([4, 2, 0, 3, 2, 5])); // Expected: 9`,
+            python: `def trap(height):
+    # Write your solution here
+    pass
+
+# Test cases
+print(trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]))  # Expected: 6
+print(trap([4, 2, 0, 3, 2, 5]))  # Expected: 9`,
+            java: `class Solution {
+    public static int trap(int[] height) {
+        // Write your solution here
+
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(trap(new int[]{0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1})); // Expected: 6
+        System.out.println(trap(new int[]{4, 2, 0, 3, 2, 5})); // Expected: 9
+    }
+}`,
+        },
+        expectedOutput: {
+            javascript: "6\n9",
+            python: "6\n9",
+            java: "6\n9",
+        },
+    },
 };
 
 export const LANGUAGE_CONFIG = {

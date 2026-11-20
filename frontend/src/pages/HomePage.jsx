@@ -8,7 +8,7 @@ function HomePage() {
         <div className="bg-gradient-to-br from-base-100 via-base-200 to-base-300">
             <nav className="bg-base-100/80 backdrop-blur-md shadow-lg z-50 border-b border-primary/20 sticky top-0 ">
                 <div className='max-w-7xl mx-auto p-4 flex items-center justify-between '>
-                    <Link to={"/"} className="flex items-center gap-3 hover:scale-105 transition-tranform duration-200">
+                    <Link to={"/"} className="flex items-center gap-3 hover:scale-105 transition-transform duration-200">
                         <div className='size-10 rounded-xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center shadow-lg'>
                             <BrainCircuit className='size-6 text-black' />
                         </div>
@@ -25,7 +25,7 @@ function HomePage() {
 
                     {/*signup button */}
                     <SignInButton mode="modal">
-                        <button className="group px-6  flex py-3 bg-gradient-to-r from-primary to -secondary rounded-xl text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 felx items-center gap-2">
+                        <button className="group px-6  flex py-3 bg-gradient-to-r from-primary to-secondary rounded-xl text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2">
                             <span>Get Started</span>
                             <ArrowRightIcon className='size-4 group-hover:translate-x-0.5' />
                         </button>
@@ -51,8 +51,8 @@ function HomePage() {
                         </h1>
 
                         <p className='text-xl text-base-content/70 leading-relaxed max-w-xl'>
-                            the ultimate Platform for Colloborative coding interviews and pair Programming.
-                            Connect face-to-face,code in real-time,and ace your technical Interviews.
+                            The ultimate platform for collaborative coding interviews and pair programming.
+                            Connect face-to-face, code in real-time, and ace your technical interviews.
                         </p>
 
                         <div className='flex flex-wrap gap-3'>
@@ -78,13 +78,13 @@ function HomePage() {
                                 </button>
                             </SignInButton>
 
-                            <button className='btn btn-outline btn-lg'>
+                            <a href="#features" className='btn btn-outline btn-lg'>
                                 <VideoIcon className='size-5' />
-                                Watch Demo
-                            </button>
+                                See Features
+                            </a>
                         </div>
 
-                        <div className='stats stats-vertical lg:stats-horizontal bg-base-100 shadow-lg flex flex'>
+                        <div className='stats stats-vertical lg:stats-horizontal bg-base-100 shadow-lg'>
                             <div className="stat">
                                 <div className="stat-value text-primary">
                                     20+
@@ -108,24 +108,28 @@ function HomePage() {
                     </div>
 
                     <img
-                        src="/hero.png"
-                        alt="CodeCollab Platform"
-                        className='w-full h-auto rounded-3xl shadow-2xl border-4 border-base-100 hover:scale-105 transition-tranform duration-500'
+                        src="/hero.webp"
+                        alt="InterviewHub platform preview"
+                        width="992"
+                        height="1056"
+                        fetchPriority="high"
+                        decoding="async"
+                        className='w-full h-auto rounded-3xl shadow-2xl border-4 border-base-100 hover:scale-105 transition-transform duration-500'
                     />
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 py-20">
+            <div id="features" className="max-w-7xl mx-auto px-4 py-20 scroll-mt-24 content-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-4xl font-bold mb-4">
-                        Everything Yuo Need to <span className='text-primary font-mono'>Succeed</span>
+                        Everything You Need to <span className='text-primary font-mono'>Succeed</span>
                     </h2>
                     <p className="text-lg text-base-content/70 max-w-2xl mx-auto">
-                        Powerful feautures designed to make your Coding seamless and productive.
+                        Powerful features designed to make your Coding seamless and productive.
                     </p>
                 </div>
 
-                {/* FEAUTERES GRID */}
+                {/* FEATURES GRID */}
 
                 <div className="grid md:grid-cols-3 gap-8">
                     <div className="card bg-base-100 shadow-xl">
@@ -148,7 +152,7 @@ function HomePage() {
                             </div>
                             <h3 className="card-title">Live Code Editor</h3>
                             <p className="text-base-content/70">
-                                Colloborate in real-Time with Syntax highlighitng and multiple language support.
+                                Collaborate in real-time with syntax highlighting and multiple language support.
                             </p>
                         </div>
                     </div>
@@ -158,9 +162,9 @@ function HomePage() {
                             <div className=" size-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                                 <UsersIcon className='size-8 text-primary' />
                             </div>
-                            <h3 className="card-title">Easy Colloboration</h3>
+                            <h3 className="card-title">Easy Collaboration</h3>
                             <p className="text-base-content/70">
-                                Share Your Screen ,Discuss Solutions, and learn from each other in real-time.
+                                Share your screen, discuss solutions, and learn from each other in real-time.
                             </p>
                         </div>
                     </div>

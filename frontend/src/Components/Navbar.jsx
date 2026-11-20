@@ -7,6 +7,7 @@ const Navbar = () => {
 
 
     const isActive = (path) => {
+        if (path === "/problems") return location.pathname === "/problems" || location.pathname.startsWith("/problem/");
         return location.pathname === path;
     }
     return (
