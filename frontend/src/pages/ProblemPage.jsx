@@ -1,141 +1,102 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router';
-import { PROBLEMS } from '../data/problems';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Navigate, useNavigate, useParams } from "react-router";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { PROBLEMS } from "../data/problems";
 import Navbar from "../Components/Navbar";
 import ProblemDescription from "../Components/ProblemDescription";
 import CodeEditorPanel from "../Components/CodeEditorPanel";
 import OutputPanel from "../Components/OutputPanel";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import toast from 'react-hot-toast';
-import confetti from "canvas-confetti";
-import { executeCode } from "../lib/piston.js";
+import { useCodeRunner } from "../hooks/useCodeRunner";
+import { useSolvedProblems } from "../hooks/useSolvedProblems";
+import { clearDraft, getDraft, markProblemSolved, saveDraft } from "../lib/progress";
+import { preloadPython } from "../lib/piston";
+
+const ALL_PROBLEMS = Object.values(PROBLEMS);
 
 const ProblemPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const problem = PROBLEMS[id];
 
-    const [currentProblemId, setcurrentProblemId] = useState("two-sum");
-    const [selectedlanguage, setselectedlanguage] = useState("javascript");
-    const [output, setoutput] = useState(null);
-    const [isRunning, setIsRunning] = useState(false);
-    const [code, setcode] = useState(PROBLEMS[currentProblemId].starterCode.javascript);
+    const [language, setLanguage] = useState("javascript");
+    const [code, setCode] = useState(() => (problem ? getDraft(id, "javascript") ?? problem.starterCode.javascript : ""));
+    const solved = useSolvedProblems();
 
-    const currentproblem = PROBLEMS[currentProblemId];
+    const onAllPassed = useCallback(() => markProblemSolved(id), [id]);
+    const { output, setOutput, isRunning, run } = useCodeRunner({ onAllPassed });
 
-    const handleLanguagechange = (e) => {
-        const newlang = e.target.value;
-        setselectedlanguage(newlang);
-        setcode(currentproblem.starterCode[newlang]);
-        setoutput(null);
-    };
-
-    const triggerConfetti = () => {
-        confetti({ particleCount: 80, spread: 250, origin: { x: 0.2, y: 0.6 } });
-        confetti({ particleCount: 80, spread: 250, origin: { x: 0.8, y: 0.6 } });
-    };
-
-    const handleproblemchange = (newProblemId) => navigate(`/problem/${newProblemId}`);
-
-    const normalizeOutput = (output) => {
-        return output
-            .trim()
-            .split("\n")
-            .map((line) =>
-                line
-                    .trim()
-                    .replace(/\[\s+/g, "[")
-                    .replace(/\s+\]/g, "]")
-                    .replace(/\s*,\s*/g, ",")
-            )
-            .filter((line) => line.length > 0)
-            .join("\n");
-    };
-
-    const checkiftestcasespassed = (actualoutput, expectedOutput) => {
-        const normalizedActual = normalizeOutput(actualoutput);
-        const normalizedExpected = normalizeOutput(expectedOutput);
-        return normalizedActual === normalizedExpected;
-    };
-
-    const handleRunCode = async () => {
-        setIsRunning(true); // Start loading state
-        setoutput(null);    // Clear previous output
-
-        try {
-            const result = await executeCode(selectedlanguage, code);
-
-            if (result.success) {
-                const expectedLines = currentproblem.expectedOutput[selectedlanguage].trim().split("\n");
-                const actualLines = result.output.trim().split("\n");
-
-                const testCaseResults = expectedLines.map((expected, index) => {
-                    const actual = actualLines[index] || "";
-                    return {
-                        passed: checkiftestcasespassed(actual, expected),
-                        actual: actual,
-                        expected: expected
-                    };
-                });
-
-                const allPassed = testCaseResults.every(test => test.passed);
-
-                if (allPassed) {
-                    triggerConfetti();
-                    toast.success("All tests passed!");
-                } else {
-                    toast.error("Some tests failed.");
-                }
-
-                setoutput({ ...result, testCaseResults, allPassed });
-            } else {
-                setoutput(result);
-                toast.error("Logical Error!");
-            }
-        } catch (error) {
-            console.error("Run Code Error:", error);
-            toast.error("Failed to connect to execution server.");
-            setoutput({ success: false, error: "Network Error" });
-        } finally {
-            setIsRunning(false);
-        }
-    };
-
+    // Load the saved draft (or starter code) whenever the problem or language changes.
     useEffect(() => {
-        if (id && PROBLEMS[id]) {
-            setcurrentProblemId(id);
-            setcode(PROBLEMS[id].starterCode[selectedlanguage]);
-            setoutput(null);
-        }
-    }, [id, selectedlanguage]);
+        if (!problem) return;
+        setCode(getDraft(id, language) ?? problem.starterCode[language]);
+        setOutput(null);
+    }, [id, language, problem, setOutput]);
+
+    // Debounced autosave.
+    const saveTimer = useRef(null);
+    const handleCodeChange = useCallback(
+        (value) => {
+            setCode(value);
+            clearTimeout(saveTimer.current);
+            saveTimer.current = setTimeout(() => saveDraft(id, language, value), 400);
+        },
+        [id, language]
+    );
+    useEffect(() => () => clearTimeout(saveTimer.current), []);
+
+    const handleLanguageChange = useCallback((e) => {
+        const next = e.target.value;
+        if (next === "python") preloadPython();
+        setLanguage(next);
+    }, []);
+
+    const handleReset = useCallback(() => {
+        clearDraft(id, language);
+        setCode(problem.starterCode[language]);
+        setOutput(null);
+    }, [id, language, problem, setOutput]);
+
+    const handleRunCode = useCallback(
+        () => run(language, code, problem.expectedOutput[language]),
+        [run, language, code, problem]
+    );
+
+    const handleProblemChange = useCallback((newId) => navigate(`/problem/${newId}`), [navigate]);
+
+    const isSolved = useMemo(() => solved.has(id), [solved, id]);
+
+    if (!problem) return <Navigate to="/problems" replace />;
 
     return (
-        <div className='h-screen w-screen bg-base-100 flex flex-col'>
+        <div className="h-dvh w-full bg-base-100 flex flex-col overflow-hidden">
             <Navbar />
-            <div className="flex-1">
-                <PanelGroup direction="horizontal">
-                    <Panel defaultSize={40} minSize={30}>
+            <div className="flex-1 min-h-0">
+                <PanelGroup direction="horizontal" autoSaveId="problem-layout-h">
+                    <Panel defaultSize={40} minSize={25}>
                         <ProblemDescription
-                            problem={currentproblem}
-                            currentProblemId={currentProblemId}
-                            onProblemChange={handleproblemchange}
-                            allProblems={Object.values(PROBLEMS)}
+                            problem={problem}
+                            currentProblemId={id}
+                            onProblemChange={handleProblemChange}
+                            allProblems={ALL_PROBLEMS}
+                            isSolved={isSolved}
                         />
                     </Panel>
-                    <PanelResizeHandle className='w-2 bg-base-200 hover:bg-primary transition-colors cursor-col-resize' />
-                    <Panel defaultSize={50} minSize={30}>
-                        <PanelGroup direction='vertical'>
+                    <PanelResizeHandle className="w-2 bg-base-200 hover:bg-primary transition-colors cursor-col-resize" />
+                    <Panel defaultSize={60} minSize={30}>
+                        <PanelGroup direction="vertical" autoSaveId="problem-layout-v">
                             <Panel defaultSize={70} minSize={30}>
                                 <CodeEditorPanel
-                                    selectedLanguage={selectedlanguage}
+                                    selectedLanguage={language}
                                     code={code}
                                     isRunning={isRunning}
-                                    onLanguageChange={handleLanguagechange}
-                                    onCodeChange={setcode}
+                                    onLanguageChange={handleLanguageChange}
+                                    onCodeChange={handleCodeChange}
                                     onRunCode={handleRunCode}
+                                    onResetCode={handleReset}
                                 />
                             </Panel>
-                            <PanelResizeHandle className='h-2 bg-base-200 hover:bg-primary transition-colors cursor-row-resize' />
-                            <Panel defaultSize={30} minSize={20}>
+                            <PanelResizeHandle className="h-2 bg-base-200 hover:bg-primary transition-colors cursor-row-resize" />
+                            <Panel defaultSize={30} minSize={15}>
                                 <OutputPanel output={output} isRunning={isRunning} />
                             </Panel>
                         </PanelGroup>

@@ -1,0 +1,39 @@
+# Render Blueprint: one web service serves both the API and the built React app.
+services:
+  - type: web
+    name: interview-platform
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      # Secrets: fill these in on the Render dashboard (never commit them).
+      - key: DB_URL
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: STREAM_API_KEY
+        sync: false
+      - key: STREAM_API_SECRET
+        sync: false
+      - key: INNGEST_EVENT_KEY
+        sync: false
+      - key: INNGEST_SIGNING_KEY
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: PISTON_API_URL
+        sync: false
+      # Build-time variables for the frontend bundle
+      - key: VITE_CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: VITE_STREAM_API_KEY
+        sync: false

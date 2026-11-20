@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Terminal, XCircle, Info } from "lucide-react";
 
 const OutputPanel = ({ output, isRunning }) => {
@@ -33,7 +33,7 @@ const OutputPanel = ({ output, isRunning }) => {
     // Runtime error
     if (!output.success && !output.testCaseResults) {
         return (
-            <div className="h-full bg-base-200 p-4 overflow-y-auto">
+            <div className="h-full bg-base-200 p-4 overflow-y-auto scroll-area">
                 <div className="alert alert-error mb-4">
                     <XCircle className="size-5" />
                     <span>Runtime Error</span>
@@ -42,6 +42,13 @@ const OutputPanel = ({ output, isRunning }) => {
                 <pre className="bg-error text-error-content rounded p-4 whitespace-pre-wrap font-mono text-sm">
                     {output.error || "unknown error"}
                 </pre>
+
+                {output.output && (
+                    <>
+                        <p className="text-[10px] uppercase font-bold text-base-content/50 mt-4 mb-1">Output before the error</p>
+                        <pre className="bg-base-100 rounded p-4 whitespace-pre-wrap font-mono text-sm">{output.output}</pre>
+                    </>
+                )}
             </div>
         );
     }
@@ -61,7 +68,7 @@ const OutputPanel = ({ output, isRunning }) => {
             </div>
 
             {/* Output Body */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-4">
+            <div className="flex-1 p-4 overflow-y-auto scroll-area space-y-4">
                 {/* Testcase buttons */}
                 <div className="flex flex-wrap gap-2">
                     {testCaseResults.map((test, index) => (
@@ -147,4 +154,4 @@ const OutputPanel = ({ output, isRunning }) => {
     );
 };
 
-export default OutputPanel;
+export default memo(OutputPanel);

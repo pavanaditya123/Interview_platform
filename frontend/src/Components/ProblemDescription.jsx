@@ -1,13 +1,18 @@
+import { memo } from "react";
+import { CheckCircle2Icon } from "lucide-react";
 import { getDifficultyBadgeClass } from "../lib/utils";
 
-function ProblemDescription({ problem, currentProblemId, onProblemChange, allProblems }) {
+function ProblemDescription({ problem, currentProblemId, onProblemChange, allProblems, isSolved }) {
     return (
-        <div className="h-full overflow-y-auto p-6 space-y-6 text-base-content bg-base-200/20">
+        <div className="h-full overflow-y-auto scroll-area p-6 space-y-6 text-base-content bg-base-200/20">
 
             {/* HEADER */}
             <div className="bg-base-100 border border-base-300 rounded-xl p-5 space-y-3  shadow-sm">
                 <div className="flex items-start justify-between">
-                    <h1 className="text-3xl font-bold tracking-tight">{problem.title}</h1>
+                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                        {problem.title}
+                        {isSolved && <CheckCircle2Icon className="size-6 text-success" aria-label="Solved" />}
+                    </h1>
                     <span className={`badge ${getDifficultyBadgeClass(problem.difficulty)} font-bold`}>
                         {problem.difficulty}
                     </span>
@@ -15,19 +20,21 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
 
                 <p className="text-base-content/60 font-medium">{problem.category}</p>
 
-                <div className="pt-2">
-                    <select
-                        className="select select-bordered select-sm w-full focus:select-primary"
-                        value={currentProblemId}
-                        onChange={(e) => onProblemChange(e.target.value)}
-                    >
-                        {allProblems.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {p.title} - {p.difficulty}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                {onProblemChange && allProblems && (
+                    <div className="pt-2">
+                        <select
+                            className="select select-bordered select-sm w-full focus:select-primary"
+                            value={currentProblemId}
+                            onChange={(e) => onProblemChange(e.target.value)}
+                        >
+                            {allProblems.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.title} - {p.difficulty}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </div>
 
             {/* DESCRIPTION */}
@@ -95,4 +102,4 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
     );
 }
 
-export default ProblemDescription;
+export default memo(ProblemDescription);

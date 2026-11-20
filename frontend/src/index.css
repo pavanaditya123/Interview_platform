@@ -1,4 +1,61 @@
 @import "tailwindcss";
-@plugin "daisyui"{
-    themes:all;
+@plugin "daisyui" {
+    /* only ship the themes we use instead of all 35 */
+    themes: forest --default, dark;
+}
+
+/* ---------- scrolling ---------- */
+html {
+    scroll-behavior: smooth;
+    scrollbar-gutter: stable; /* no layout jump when a scrollbar appears */
+    -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+body {
+    overscroll-behavior-y: none; /* no rubber-band bounce revealing blank page */
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* Inner scroll panes: momentum scrolling, keep scroll inside the pane, slim scrollbar */
+.scroll-area {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--color-base-content) 25%, transparent) transparent;
+}
+
+* {
+    scrollbar-width: thin;
+}
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--color-base-content) 25%, transparent);
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--color-base-content) 40%, transparent);
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Off-screen sections skip rendering until scrolled near (faster first paint, smoother scroll) */
+.content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
+}
+
+/* Stream chat dark tweaks so it fits the app theme */
+.stream-chat-dark .str-chat {
+    height: 100%;
 }

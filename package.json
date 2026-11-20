@@ -1,18 +1,21 @@
 {
     "name": "interview-platform",
     "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
+    "description": "Real-time collaborative coding interview platform (video, chat, shared editor)",
+    "private": true,
     "scripts": {
-        "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
-        "start": "npm run start --prefix backend"
+        "build": "npm ci --prefix backend --omit=dev && npm ci --prefix frontend --include=dev && npm run build --prefix frontend",
+        "start": "npm run start --prefix backend",
+        "test": "npm test --prefix backend && npm test --prefix frontend",
+        "lint": "npm run lint --prefix frontend"
+    },
+    "engines": {
+        "node": ">=20"
     },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/pavanaditya123/Interview_platform.git"
     },
-    "keywords": [],
-    "author": "",
     "license": "ISC",
     "bugs": {
         "url": "https://github.com/pavanaditya123/Interview_platform/issues"
