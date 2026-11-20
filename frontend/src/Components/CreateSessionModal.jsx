@@ -34,7 +34,7 @@ function CreateSessionModal({ isOpen, onClose, roomConfig, setRoomConfig, onCrea
                             value={roomConfig.problem}
                             onChange={(e) => {
                                 const problem = problems.find((p) => p.title === e.target.value);
-                                setRoomConfig({ problem: e.target.value, difficulty: problem?.difficulty ?? "" });
+                                setRoomConfig((c) => ({ ...c, problem: e.target.value, difficulty: problem?.difficulty ?? "" }));
                             }}
                         >
                             <option value="" disabled>
@@ -48,6 +48,55 @@ function CreateSessionModal({ isOpen, onClose, roomConfig, setRoomConfig, onCrea
                         </select>
                     </label>
 
+                    <label className="form-control w-full flex flex-col gap-2">
+                        <span className="label-text font-semibold">Time limit</span>
+                        <select
+                            className="select select-bordered w-full"
+                            value={roomConfig.durationMinutes}
+                            onChange={(e) => setRoomConfig((c) => ({ ...c, durationMinutes: Number(e.target.value) }))}
+                        >
+                            <option value={0}>No time limit</option>
+                            {[15, 30, 45, 60, 90].map((m) => (
+                                <option key={m} value={m}>
+                                    {m} minutes (timed mock interview)
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+
+                    <details className="collapse collapse-arrow bg-base-200 border border-base-300">
+                        <summary className="collapse-title font-semibold">
+                            Role requirements <span className="text-xs font-normal opacity-60">(optional · only you see this)</span>
+                        </summary>
+                        <div className="collapse-content space-y-3">
+                            <p className="text-xs opacity-70">Used for your private notes and the AI interview report after the call.</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <input
+                                    className="input input-bordered w-full"
+                                    placeholder="Role, e.g. Backend Engineer"
+                                    maxLength={120}
+                                    value={roomConfig.role}
+                                    onChange={(e) => setRoomConfig((c) => ({ ...c, role: e.target.value }))}
+                                />
+                                <input
+                                    className="input input-bordered w-full"
+                                    placeholder="Level, e.g. Mid / Senior"
+                                    maxLength={60}
+                                    value={roomConfig.level}
+                                    onChange={(e) => setRoomConfig((c) => ({ ...c, level: e.target.value }))}
+                                />
+                            </div>
+                            <textarea
+                                className="textarea textarea-bordered w-full"
+                                rows={3}
+                                maxLength={2000}
+                                placeholder="Required skills, e.g. Node.js, REST APIs, MongoDB, system design basics"
+                                value={roomConfig.skills}
+                                onChange={(e) => setRoomConfig((c) => ({ ...c, skills: e.target.value }))}
+                            />
+                        </div>
+                    </details>
+
                     {selected && (
                         <div className="alert alert-success alert-soft">
                             <Code2Icon className="size-5" />
@@ -59,7 +108,10 @@ function CreateSessionModal({ isOpen, onClose, roomConfig, setRoomConfig, onCrea
                                         {selected.difficulty}
                                     </span>
                                 </p>
-                                <p className="text-sm">Max participants: 2 (1-on-1 session)</p>
+                                <p className="text-sm">
+                                    Max participants: 2 (1-on-1) ·{" "}
+                                    {roomConfig.durationMinutes ? `${roomConfig.durationMinutes} min limit` : "untimed"}
+                                </p>
                             </div>
                         </div>
                     )}

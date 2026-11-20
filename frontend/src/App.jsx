@@ -10,6 +10,10 @@ const ProblemsPage = lazy(() => import("./pages/ProblemsPage"));
 const ProblemPage = lazy(() => import("./pages/ProblemPage"));
 const SessionPage = lazy(() => import("./pages/SessionPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const InterviewReportPage = lazy(() => import("./pages/InterviewReportPage"));
+const MockInterviewsPage = lazy(() => import("./pages/MockInterviewsPage"));
+const MockInterviewRoomPage = lazy(() => import("./pages/MockInterviewRoomPage"));
+const MockReportPage = lazy(() => import("./pages/MockReportPage"));
 
 function PageLoader() {
     return (
@@ -45,6 +49,10 @@ function App() {
                     <Route path="/problems" element={protect(<ProblemsPage />)} />
                     <Route path="/problem/:id" element={protect(<ProblemPage />)} />
                     <Route path="/session/:id" element={protect(<SessionPage />)} />
+                    <Route path="/session/:id/report" element={protect(<InterviewReportPage />)} />
+                    <Route path="/mock" element={protect(<MockInterviewsPage />)} />
+                    <Route path="/mock/:id" element={protect(<MockInterviewRoomPage />)} />
+                    <Route path="/mock/:id/report" element={protect(<MockReportPage />)} />
                     <Route path="*" element={<NotFoundPage />} />
                 </Routes>
             </Suspense>

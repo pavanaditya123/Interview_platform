@@ -32,6 +32,13 @@ const sessionSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        // Timed mock interview length in minutes (0 = untimed)
+        durationMinutes: {
+            type: Number,
+            min: 0,
+            max: 180,
+            default: 0,
+        },
     },
     { timestamps: true }
 );

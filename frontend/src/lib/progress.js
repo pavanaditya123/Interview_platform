@@ -22,11 +22,37 @@ const write = (key, value) => {
 
 export const getSolvedProblems = () => new Set(read(SOLVED_KEY, []));
 
+const setSolved = (ids) => {
+    write(SOLVED_KEY, [...new Set(ids)]);
+    window.dispatchEvent(new Event("interviewhub:progress"));
+};
+
 export const markProblemSolved = (problemId) => {
     const solved = getSolvedProblems();
     solved.add(problemId);
-    write(SOLVED_KEY, [...solved]);
-    window.dispatchEvent(new Event("interviewhub:progress"));
+    setSolved(solved);
+    // Save to the account too (fire and forget; local copy already updated).
+    import("./axios")
+        .then(({ default: api }) => api.post("/users/me/progress", { problemIds: [problemId] }))
+        .catch(() => {});
+};
+
+let syncPromise = null;
+/** Merges this browser's progress with the account's, once per page load. */
+export const syncProgress = () => {
+    syncPromise ??= (async () => {
+        try {
+            const { default: api } = await import("./axios");
+            const local = [...getSolvedProblems()];
+            const { data } = local.length
+                ? await api.post("/users/me/progress", { problemIds: local })
+                : await api.get("/users/me/progress");
+            setSolved([...local, ...(data.solvedProblems ?? [])]);
+        } catch {
+            syncPromise = null; // try again next time
+        }
+    })();
+    return syncPromise;
 };
 
 export const getDraft = (problemId, language) => read(draftKey(problemId, language), null);

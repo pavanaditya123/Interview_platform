@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import crypto from "crypto";
 import Session from "../models/Session.js";
+import Evaluation from "../models/Evaluation.js";
+import { sanitizeEvaluationUpdate } from "./evaluationController.js";
 import { streamClient, chatClient } from "../lib/stream.js";
 
 const USER_FIELDS = "name profileImage email clerkId";
@@ -16,7 +18,7 @@ const clampLimit = (value, fallback = 20, max = 50) => {
 
 export async function createSession(req, res) {
     try {
-        const { problem, difficulty } = req.body ?? {};
+        const { problem, difficulty, durationMinutes = 0, requirements } = req.body ?? {};
         const userId = req.user._id;
         const clerkId = req.user.clerkId;
 
@@ -37,6 +39,11 @@ export async function createSession(req, res) {
             });
         }
 
+        const duration = Number(durationMinutes);
+        if (!Number.isInteger(duration) || duration < 0 || duration > 180) {
+            return res.status(400).json({ message: "durationMinutes must be a whole number between 0 and 180" });
+        }
+
         const callId = `session_${Date.now()}_${crypto.randomBytes(6).toString("hex")}`;
 
         const session = await Session.create({
@@ -44,6 +51,7 @@ export async function createSession(req, res) {
             difficulty: normalizedDifficulty,
             host: userId,
             callId,
+            durationMinutes: duration,
         });
 
         try {
@@ -65,6 +73,13 @@ export async function createSession(req, res) {
             await Session.deleteOne({ _id: session._id });
             throw streamError;
         }
+
+        // Interviewer-only requirements live in the private Evaluation document.
+        await Evaluation.create({
+            session: session._id,
+            host: userId,
+            ...sanitizeEvaluationUpdate({ requirements }),
+        }).catch((e) => console.log("Could not create evaluation:", e.message));
 
         res.status(201).json({ session });
     } catch (error) {
@@ -206,9 +221,20 @@ export async function endSession(req, res) {
         session.status = "completed";
         await session.save();
 
-        // Clean up Stream resources; a failure here should not undo ending the session.
+        // Snapshot the final code for the interviewer's report.
+        const snapshot = sanitizeEvaluationUpdate({ finalCode: req.body?.finalCode, finalLanguage: req.body?.finalLanguage });
+        if (Object.keys(snapshot).length) {
+            await Evaluation.updateOne(
+                { session: session._id },
+                { $set: snapshot, $setOnInsert: { session: session._id, host: session.host } },
+                { upsert: true }
+            ).catch((e) => console.log("Could not save final code:", e.message));
+        }
+
+        // End the call (not delete) so recordings stay available; remove the chat channel.
+        // A failure here should not undo ending the session.
         const results = await Promise.allSettled([
-            streamClient.video.call("default", session.callId).delete({ hard: true }),
+            streamClient.video.call("default", session.callId).end(),
             chatClient.channel("messaging", session.callId).delete(),
         ]);
         results

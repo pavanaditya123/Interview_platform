@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { useUser } from "@clerk/clerk-react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { StreamCall, StreamVideo } from "@stream-io/video-react-sdk";
-import { CopyIcon, Loader2Icon, LogOutIcon, PhoneOffIcon, UsersIcon } from "lucide-react";
+import { ClipboardListIcon, CopyIcon, Loader2Icon, LogOutIcon, PhoneOffIcon, UsersIcon, VideoIcon } from "lucide-react";
 import toast from "react-hot-toast";
 
 import Navbar from "../Components/Navbar";
@@ -11,6 +11,8 @@ import ProblemDescription from "../Components/ProblemDescription";
 import CodeEditorPanel from "../Components/CodeEditorPanel";
 import OutputPanel from "../Components/OutputPanel";
 import VideoCallUI from "../Components/VideoCallUI";
+import InterviewerPanel from "../Components/InterviewerPanel";
+import SessionTimer from "../Components/SessionTimer";
 import { PROBLEMS } from "../data/problems";
 import { useEndSession, useJoinSession, useSessionById } from "../hooks/useSessions";
 import useStreamClient from "../hooks/useStreamClient";
@@ -60,6 +62,7 @@ function SessionPage() {
     const problem = useMemo(() => findProblem(session?.problem), [session?.problem]);
     const [language, setLanguage] = useState("javascript");
     const [code, setCode] = useState("");
+    const [rightTab, setRightTab] = useState("call");
     const { output, isRunning, run } = useCodeRunner();
 
     // Starter code once the problem is known.
@@ -135,7 +138,10 @@ function SessionPage() {
 
     const handleEndSession = () => {
         if (!confirm("End this session for everyone? This cannot be undone.")) return;
-        endSession.mutate(id, { onSuccess: () => navigate("/dashboard") });
+        endSession.mutate(
+            { id, finalCode: latest.current.code, finalLanguage: latest.current.language },
+            { onSuccess: () => navigate(`/session/${id}/report`) }
+        );
     };
 
     const copyInvite = async () => {
@@ -169,9 +175,16 @@ function SessionPage() {
         return (
             <CenteredMessage title="Session ended">
                 <p className="opacity-70">This session is over. Check your past sessions on the dashboard.</p>
-                <Link to="/dashboard" className="btn btn-primary mt-4">
-                    Back to dashboard
-                </Link>
+                <div className="flex gap-2 mt-4">
+                    {isHost && (
+                        <Link to={`/session/${id}/report`} className="btn btn-primary">
+                            View interview report
+                        </Link>
+                    )}
+                    <Link to="/dashboard" className={`btn ${isHost ? "btn-ghost" : "btn-primary"}`}>
+                        Back to dashboard
+                    </Link>
+                </div>
             </CenteredMessage>
         );
     }
@@ -205,10 +218,13 @@ function SessionPage() {
                                                     {capitalize(session.difficulty)}
                                                 </span>
                                             </div>
-                                            <p className="text-sm opacity-60 flex items-center gap-1">
-                                                <UsersIcon className="size-3" />
-                                                Host: {session.host?.name} · {session.participant ? "2/2" : "1/2"} participants
-                                            </p>
+                                            <div className="text-sm opacity-80 flex items-center gap-2 flex-wrap">
+                                                <span className="flex items-center gap-1 opacity-75">
+                                                    <UsersIcon className="size-3" />
+                                                    Host: {session.host?.name} · {session.participant ? "2/2" : "1/2"} participants
+                                                </span>
+                                                <SessionTimer startedAt={session.createdAt} durationMinutes={session.durationMinutes ?? 0} />
+                                            </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <button className="btn btn-sm btn-ghost gap-1" onClick={copyInvite} title="Copy invite link">
@@ -271,7 +287,32 @@ function SessionPage() {
 
                     {/* RIGHT: video + chat */}
                     <Panel defaultSize={45} minSize={25}>
-                        <div className="h-full bg-base-200 p-3 overflow-hidden">
+                        <div className="h-full bg-base-200 flex flex-col overflow-hidden">
+                            {isHost && (
+                                <div role="tablist" className="tabs tabs-box bg-base-100 m-3 mb-0 shrink-0">
+                                    <button
+                                        role="tab"
+                                        className={`tab gap-2 ${rightTab === "call" ? "tab-active" : ""}`}
+                                        onClick={() => setRightTab("call")}
+                                    >
+                                        <VideoIcon className="size-4" /> Call
+                                    </button>
+                                    <button
+                                        role="tab"
+                                        className={`tab gap-2 ${rightTab === "notes" ? "tab-active" : ""}`}
+                                        onClick={() => setRightTab("notes")}
+                                    >
+                                        <ClipboardListIcon className="size-4" /> Notes &amp; scorecard
+                                    </button>
+                                </div>
+                            )}
+                            {isHost && rightTab === "notes" && problem && (
+                                <div className="flex-1 min-h-0">
+                                    <InterviewerPanel sessionId={id} problem={problem} language={language} code={code} />
+                                </div>
+                            )}
+                            {/* the call stays mounted while the notes tab is open so it never drops */}
+                            <div className={`flex-1 min-h-0 p-3 ${isHost && rightTab === "notes" ? "hidden" : ""}`}>
                             {isInitializingCall || joinSession.isPending ? (
                                 <div className="h-full flex items-center justify-center">
                                     <div className="text-center">
@@ -297,10 +338,11 @@ function SessionPage() {
                             ) : (
                                 <StreamVideo client={streamClient}>
                                     <StreamCall call={call}>
-                                        <VideoCallUI chatClient={chatClient} channel={channel} />
+                                        <VideoCallUI chatClient={chatClient} channel={channel} isHost={isHost} />
                                     </StreamCall>
                                 </StreamVideo>
                             )}
+                            </div>
                         </div>
                     </Panel>
                 </PanelGroup>

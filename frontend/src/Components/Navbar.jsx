@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from "react-router";
-import { BookOpenIcon, BrainCircuit, LayoutDashboardIcon } from 'lucide-react';
+import { BookOpenIcon, BotIcon, BrainCircuit, LayoutDashboardIcon } from 'lucide-react';
 import { UserButton } from '@clerk/clerk-react';
 const Navbar = () => {
     const location = useLocation()
@@ -8,6 +8,7 @@ const Navbar = () => {
 
     const isActive = (path) => {
         if (path === "/problems") return location.pathname === "/problems" || location.pathname.startsWith("/problem/");
+        if (path === "/mock") return location.pathname.startsWith("/mock");
         return location.pathname === path;
     }
     return (
@@ -44,6 +45,20 @@ const Navbar = () => {
                         <div className="flex items-center gap-x-2">
                             <BookOpenIcon className='size-4' />
                             <span className='font-medium hidden sm:inline'>Problems</span>
+                        </div>
+                    </Link>
+
+                    <Link to={"/mock"}
+                        className={`px-4 py-2.5 rounded-lg transition-all duration-200 
+                    ${isActive("/mock")
+                                ?
+                                "bg-primary text-primary-content"
+                                :
+                                "hover:bg-base-200 text-base-content/70 hover:text-base-content"
+                            }`}>
+                        <div className="flex items-center gap-x-2">
+                            <BotIcon className='size-4' />
+                            <span className='font-medium hidden sm:inline'>AI Interview</span>
                         </div>
                     </Link>
 

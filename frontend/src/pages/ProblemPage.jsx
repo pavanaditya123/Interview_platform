@@ -6,6 +6,8 @@ import Navbar from "../Components/Navbar";
 import ProblemDescription from "../Components/ProblemDescription";
 import CodeEditorPanel from "../Components/CodeEditorPanel";
 import OutputPanel from "../Components/OutputPanel";
+import AiAssistantPanel from "../Components/AiAssistantPanel";
+import { SparklesIcon, TerminalIcon } from "lucide-react";
 import { useCodeRunner } from "../hooks/useCodeRunner";
 import { useSolvedProblems } from "../hooks/useSolvedProblems";
 import { clearDraft, getDraft, markProblemSolved, saveDraft } from "../lib/progress";
@@ -19,6 +21,7 @@ const ProblemPage = () => {
     const problem = PROBLEMS[id];
 
     const [language, setLanguage] = useState("javascript");
+    const [bottomTab, setBottomTab] = useState("output");
     const [code, setCode] = useState(() => (problem ? getDraft(id, "javascript") ?? problem.starterCode.javascript : ""));
     const solved = useSolvedProblems();
 
@@ -56,10 +59,10 @@ const ProblemPage = () => {
         setOutput(null);
     }, [id, language, problem, setOutput]);
 
-    const handleRunCode = useCallback(
-        () => run(language, code, problem.expectedOutput[language]),
-        [run, language, code, problem]
-    );
+    const handleRunCode = useCallback(() => {
+        setBottomTab("output");
+        return run(language, code, problem.expectedOutput[language]);
+    }, [run, language, code, problem]);
 
     const handleProblemChange = useCallback((newId) => navigate(`/problem/${newId}`), [navigate]);
 
@@ -97,7 +100,33 @@ const ProblemPage = () => {
                             </Panel>
                             <PanelResizeHandle className="h-2 bg-base-200 hover:bg-primary transition-colors cursor-row-resize" />
                             <Panel defaultSize={30} minSize={15}>
-                                <OutputPanel output={output} isRunning={isRunning} />
+                                <div className="h-full flex flex-col">
+                                    <div role="tablist" className="tabs tabs-border bg-base-100 px-2 shrink-0">
+                                        <button
+                                            role="tab"
+                                            className={`tab gap-1 ${bottomTab === "output" ? "tab-active" : ""}`}
+                                            onClick={() => setBottomTab("output")}
+                                        >
+                                            <TerminalIcon className="size-4" /> Output
+                                        </button>
+                                        <button
+                                            role="tab"
+                                            className={`tab gap-1 ${bottomTab === "ai" ? "tab-active" : ""}`}
+                                            onClick={() => setBottomTab("ai")}
+                                        >
+                                            <SparklesIcon className="size-4" /> AI Assistant
+                                        </button>
+                                    </div>
+                                    <div className="flex-1 min-h-0">
+                                        {/* both stay mounted so switching tabs keeps their state */}
+                                        <div className={bottomTab === "output" ? "h-full" : "hidden"}>
+                                            <OutputPanel output={output} isRunning={isRunning} />
+                                        </div>
+                                        <div className={bottomTab === "ai" ? "h-full" : "hidden"}>
+                                            <AiAssistantPanel problem={problem} language={language} code={code} />
+                                        </div>
+                                    </div>
+                                </div>
                             </Panel>
                         </PanelGroup>
                     </Panel>

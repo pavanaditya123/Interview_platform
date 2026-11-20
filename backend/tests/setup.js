@@ -26,6 +26,8 @@ vi.mock("../src/lib/stream.js", () => {
     const call = {
         getOrCreate: vi.fn().mockResolvedValue({}),
         delete: vi.fn().mockResolvedValue({}),
+        end: vi.fn().mockResolvedValue({}),
+        listRecordings: vi.fn().mockResolvedValue({ recordings: [] }),
     };
     return {
         streamClient: { video: { call: vi.fn(() => call) } },
