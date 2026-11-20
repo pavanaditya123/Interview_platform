@@ -32,6 +32,11 @@ services:
         sync: false
       - key: PISTON_API_URL
         sync: false
+      # AI hints, code review, interview reports and AI mock interviews: set ONE (both have free tiers)
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
       # Build-time variables for the frontend bundle
       - key: VITE_CLERK_PUBLISHABLE_KEY
         sync: false

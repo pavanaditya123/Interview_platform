@@ -1,17 +1,56 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { CallControls, CallingState, SpeakerLayout, useCallStateHooks } from "@stream-io/video-react-sdk";
+import { CallControls, CallingState, SpeakerLayout, useCall, useCallStateHooks } from "@stream-io/video-react-sdk";
+import toast from "react-hot-toast";
 import { Channel, ChannelHeader, Chat, MessageComposer, MessageList, Thread } from "stream-chat-react";
-import { Loader2Icon, MessageSquareIcon, UsersIcon, XIcon } from "lucide-react";
+import { CircleIcon, Loader2Icon, MessageSquareIcon, SquareIcon, UsersIcon, XIcon } from "lucide-react";
 
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import "stream-chat-react/dist/css/index.css";
 
-function VideoCallUI({ chatClient, channel }) {
+function RecordButton() {
+    const call = useCall();
+    const { useIsCallRecordingInProgress } = useCallStateHooks();
+    const recording = useIsCallRecordingInProgress();
+    const [busy, setBusy] = useState(false);
+
+    const toggle = async () => {
+        setBusy(true);
+        try {
+            if (recording) {
+                await call.stopRecording();
+                toast.success("Recording saved. Find it in the interview report.");
+            } else {
+                await call.startRecording();
+                toast.success("Recording started");
+            }
+        } catch (error) {
+            console.error("Recording error:", error);
+            toast.error("Recording is not available. Enable it for the default call type in your Stream dashboard.");
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    return (
+        <button
+            onClick={toggle}
+            disabled={busy}
+            className={`btn btn-sm gap-2 ${recording ? "btn-error" : "btn-ghost"}`}
+            title={recording ? "Stop recording" : "Record this interview"}
+        >
+            {recording ? <SquareIcon className="size-4 fill-current" /> : <CircleIcon className="size-4 text-error fill-error" />}
+            {recording ? "Stop" : "Record"}
+        </button>
+    );
+}
+
+function VideoCallUI({ chatClient, channel, isHost = false }) {
     const navigate = useNavigate();
-    const { useCallCallingState, useParticipantCount } = useCallStateHooks();
+    const { useCallCallingState, useParticipantCount, useIsCallRecordingInProgress } = useCallStateHooks();
     const callingState = useCallCallingState();
     const participantCount = useParticipantCount();
+    const recording = useIsCallRecordingInProgress();
     const [isChatOpen, setIsChatOpen] = useState(false);
 
     if (callingState === CallingState.JOINING) {
@@ -34,7 +73,14 @@ function VideoCallUI({ chatClient, channel }) {
                         <span className="font-semibold">
                             {participantCount} {participantCount === 1 ? "participant" : "participants"}
                         </span>
+                        {recording && (
+                            <span className="badge badge-error badge-sm gap-1 animate-pulse">
+                                <CircleIcon className="size-2 fill-current" /> REC
+                            </span>
+                        )}
                     </div>
+                    <div className="flex items-center gap-1">
+                    {isHost && <RecordButton />}
                     {chatClient && channel && (
                         <button
                             onClick={() => setIsChatOpen((v) => !v)}
@@ -45,6 +91,7 @@ function VideoCallUI({ chatClient, channel }) {
                             Chat
                         </button>
                     )}
+                    </div>
                 </div>
 
                 <div className="flex-1 bg-base-300 rounded-lg overflow-hidden relative min-h-0">

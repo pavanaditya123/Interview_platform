@@ -16,6 +16,24 @@ A real-time platform for 1-on-1 coding interviews and pair programming: HD video
   - `Ctrl/Cmd + Enter` runs your code
 - **Dashboard**: live sessions lobby (auto-refreshing), your stats, and past sessions with duration
 
+### AI features (Groq or Gemini, free tiers)
+
+- **AI hints and code review** on the practice page. Hints come in three levels (Nudge → Approach → Plan) and never give away the full solution. The review covers correctness, complexity, code quality and a score.
+- **Interviewer tools (private to the host):**
+  - Role requirements (role, level, skills) set when creating a session
+  - Live **notes and a 5-part star scorecard** inside the call, plus an AI look at the candidate's current code
+  - **Timed interviews** (15–90 min) with a countdown and warnings
+  - **Recording**: the host can record the call, and the recording plays back on the report page
+  - When the host ends the session, the candidate's final code is saved and an **AI interview report** is generated. It covers summary, strengths, gaps, code assessment, fit for the role, a recommendation and an AI score, shown on a **performance card**.
+  - An **"Interviews you conducted" dashboard** with candidates, scores, recommendations and report links
+  - The candidate never sees any of this. It lives in a separate collection behind host-only endpoints, and tests check that it doesn't leak.
+- **AI mock interviews with Ava:**
+  - Upload your resume (PDF/TXT, parsed in the browser) and pick a role, level, interview type (technical, behavioral or mixed) and number of questions.
+  - Ava asks one tailored question at a time, follows up on vague answers, and wraps up when the questions are done.
+  - Answer by **voice** (speech-to-text) or typing; Ava can **speak** her questions aloud.
+  - **Your personal report**: overall score, a 5-dimension performance card, strengths, **where you lacked** (with what a strong answer would include), a question-by-question table, an improvement plan, resume tips, and the full transcript. You can save it as a PDF.
+- **Progress is saved to your account**, so solved problems follow you across devices.
+
 ### Code execution
 
 The public Piston API became whitelist-only in February 2026, so code now runs like this:
@@ -27,6 +45,18 @@ The public Piston API became whitelist-only in February 2026, so code now runs l
 | Java       | Backend proxy `POST /api/code/execute` → your self-hosted Piston (`PISTON_API_URL`) |
 
 Every run has a time limit, so an infinite loop can't freeze the tab.
+
+#### Self-hosting Piston (to run Java)
+
+Run Piston anywhere Docker runs (a small VM, Railway, Fly.io; Render's free tier can't run privileged containers):
+
+```bash
+docker run -d --name piston --privileged -p 2000:2000 ghcr.io/engineer-man/piston
+# install the runtimes the app uses
+curl -X POST localhost:2000/api/v2/packages -H "Content-Type: application/json" -d '{"language":"java","version":"15.0.2"}'
+```
+
+Then set `PISTON_API_URL=http://<host>:2000/api/v2` on the backend. JavaScript and Python never need it.
 
 ## Tech stack
 
@@ -62,6 +92,8 @@ npm run dev --prefix backend               # API on :3000 (or: npm run dev:memor
 npm run dev --prefix frontend              # app on :5173, /api is proxied to :3000
 ```
 
+**AI setup (free):** create a key at [console.groq.com](https://console.groq.com) (recommended, very fast) or [aistudio.google.com](https://aistudio.google.com), and set `GROQ_API_KEY` or `GEMINI_API_KEY` in `backend/.env`. Groq is used when both are set. You can override the models with `GROQ_MODEL` (default `openai/gpt-oss-120b`) or `GEMINI_MODEL` (default `gemini-3.8-flash`). Without a key, everything else works and the AI buttons show a "not configured" message.
+
 Users are created in MongoDB by the Inngest function when Clerk fires `user.created`. Locally, run `npx inngest-cli@latest dev` and point the Clerk webhook at it.
 
 ## Tests
@@ -70,8 +102,8 @@ Users are created in MongoDB by the Inngest function when Clerk fires `user.crea
 npm test              # runs both suites
 ```
 
-- **Backend (22 tests):** real in-memory MongoDB with Clerk and Stream mocked. Covers auth, create/join/end rules, the concurrent-join race, Stream failure rollback, validation, and payload limits.
-- **Frontend (59 tests):** judge/normalisation, storage, and components. Every problem's expected output is checked by running reference solutions in **JavaScript and Python**, and the untouched starter code is confirmed to fail.
+- **Backend (55 tests):** real in-memory MongoDB with Clerk, Stream and the AI providers mocked. Covers auth, create/join/end rules, the concurrent-join race, Stream failure rollback, validation and payload limits. It also covers the AI streaming paths for both Groq and Gemini (including split chunks, 429s, network failures and safety blocks), the privacy of interviewer data, the AI report prompt, and the full mock interview flow (turns, retry after failure, finishing early, score parsing).
+- **Frontend (67 tests):** judge/normalisation, storage, the SSE client, Markdown safety (no raw HTML), the performance card, and components. Every problem's expected output is checked by running reference solutions in **JavaScript and Python**, and the untouched starter code is confirmed to fail.
 
 CI (`.github/workflows/ci.yml`) runs lint, both test suites, and a production build on every PR.
 
@@ -92,3 +124,12 @@ CI (`.github/workflows/ci.yml`) runs lint, both test suites, and a production bu
 | POST   | `/api/sessions/:id/end`    | End the session (host only)                     |
 | GET    | `/api/chat/token`          | Stream token for video and chat                 |
 | POST   | `/api/code/execute`        | Run code via Piston `{ language, code }`        |
+| POST   | `/api/ai/hint`, `/api/ai/review` | Stream an AI hint (levels 1–3) or code review (SSE) |
+| GET/PATCH | `/api/sessions/:id/evaluation` | Host only: requirements, notes, scores, recommendation |
+| POST   | `/api/sessions/:id/report` | Host only: stream and save the AI interview report |
+| GET    | `/api/sessions/:id/recordings` | Host only: call recordings                   |
+| GET    | `/api/sessions/hosted`     | Host only: interviews you conducted, with score summary |
+| GET/POST | `/api/users/me/progress` | Solved problems synced to your account          |
+| GET/POST | `/api/mock-interviews`   | List or start AI mock interviews                |
+| POST   | `/api/mock-interviews/:id/turn` | Send an answer, stream Ava's next question  |
+| POST   | `/api/mock-interviews/:id/finish`, `/report` | End early; stream your personal report |

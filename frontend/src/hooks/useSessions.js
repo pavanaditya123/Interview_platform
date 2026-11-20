@@ -66,3 +66,25 @@ export const useEndSession = () => {
         onError: (error) => toast.error(getErrorMessage(error, "Failed to end session")),
     });
 };
+
+// ---- interviewer-only ----
+export const useHostedSessions = () =>
+    useQuery({ queryKey: ["sessions", "hosted"], queryFn: sessionApi.getHostedSessions });
+
+export const useEvaluation = (id, enabled = true) =>
+    useQuery({
+        queryKey: ["evaluation", id],
+        queryFn: () => sessionApi.getEvaluation(id),
+        enabled: Boolean(id) && enabled,
+        staleTime: 0,
+    });
+
+export const useUpdateEvaluation = (id) => {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: (data) => sessionApi.updateEvaluation({ id, ...data }),
+        onSuccess: (data) =>
+            qc.setQueryData(["evaluation", id], (old) => (old ? { ...old, evaluation: data.evaluation } : old)),
+        onError: (error) => toast.error(getErrorMessage(error, "Failed to save")),
+    });
+};

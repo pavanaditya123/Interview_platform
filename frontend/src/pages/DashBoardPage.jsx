@@ -6,16 +6,20 @@ import WelcomeSection from "../Components/dashboard/WelcomeSection";
 import StatsCards from "../Components/dashboard/StatsCards";
 import ActiveSessions from "../Components/dashboard/ActiveSessions";
 import RecentSessions from "../Components/dashboard/RecentSessions";
+import InterviewerDashboard from "../Components/dashboard/InterviewerDashboard";
+import MockInterviewCta from "../Components/dashboard/MockInterviewCta";
 import CreateSessionModal from "../Components/CreateSessionModal";
 import { useActiveSessions, useCreateSession, useMyRecentSessions } from "../hooks/useSessions";
 import { useSolvedProblems } from "../hooks/useSolvedProblems";
 import { PROBLEMS } from "../data/problems";
 
+const EMPTY_ROOM = { problem: "", difficulty: "", durationMinutes: 0, role: "", level: "", skills: "" };
+
 const DashBoardPage = () => {
     const navigate = useNavigate();
     const { user } = useUser();
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [roomConfig, setRoomConfig] = useState({ problem: "", difficulty: "" });
+    const [roomConfig, setRoomConfig] = useState(EMPTY_ROOM);
 
     const createSession = useCreateSession();
     const { data: activeData, isLoading: loadingActive } = useActiveSessions();
@@ -28,10 +32,16 @@ const DashBoardPage = () => {
     const handleCreateRoom = () => {
         if (!roomConfig.problem || !roomConfig.difficulty) return;
         createSession.mutate(
-            { problem: roomConfig.problem, difficulty: roomConfig.difficulty.toLowerCase() },
+            {
+                problem: roomConfig.problem,
+                difficulty: roomConfig.difficulty.toLowerCase(),
+                durationMinutes: roomConfig.durationMinutes,
+                requirements: { role: roomConfig.role, level: roomConfig.level, skills: roomConfig.skills },
+            },
             {
                 onSuccess: (data) => {
                     setShowCreateModal(false);
+                    setRoomConfig(EMPTY_ROOM);
                     navigate(`/session/${data.session._id}`);
                 },
                 onError: (error) => {
@@ -63,6 +73,8 @@ const DashBoardPage = () => {
                     <ActiveSessions sessions={activeSessions} isLoading={loadingActive} userId={user?.id} />
                 </div>
 
+                <MockInterviewCta />
+                <InterviewerDashboard />
                 <RecentSessions sessions={recentSessions} isLoading={loadingRecent} />
             </div>
 
