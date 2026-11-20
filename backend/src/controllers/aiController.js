@@ -17,7 +17,7 @@ const validateCommon = (body = {}) => {
 };
 
 // Streams AI output as Server-Sent Events: `data: {"text": "..."}` chunks, then `data: {"done": true}`.
-export async function streamToClient(req, res, { system, prompt, maxTokens, onComplete }) {
+export async function streamToClient(req, res, { system, prompt, messages, maxTokens, onComplete }) {
     res.status(200).set({
         "Content-Type": "text/event-stream; charset=utf-8",
         "Cache-Control": "no-cache, no-transform",
@@ -38,7 +38,7 @@ export async function streamToClient(req, res, { system, prompt, maxTokens, onCo
     let full = "";
     try {
         const { blocked } = await streamText(
-            { system, prompt, maxTokens },
+            { system, prompt, messages, maxTokens },
             {
                 onText: (text) => {
                     full += text;

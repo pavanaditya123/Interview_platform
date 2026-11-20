@@ -16,6 +16,7 @@ import sessionRoutes from "./routes/sessionRoutes.js";
 import codeRoutes from "./routes/codeRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import mockInterviewRoutes from "./routes/mockInterviewRoutes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.resolve(__dirname, "../../frontend/dist");
@@ -74,6 +75,7 @@ export function createApp() {
     app.use("/api/code", codeRoutes);
     app.use("/api/ai", aiRoutes);
     app.use("/api/users", userRoutes);
+    app.use("/api/mock-interviews", mockInterviewRoutes);
 
     app.use("/api", (_req, res) => res.status(404).json({ message: "Route not found" }));
 

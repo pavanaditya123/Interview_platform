@@ -41,7 +41,7 @@ async function* readSse(body) {
 
 const providers = {
     groq: {
-        request: ({ system, prompt, maxTokens }) => ({
+        request: ({ system, messages, maxTokens }) => ({
             url: "https://api.groq.com/openai/v1/chat/completions",
             headers: { Authorization: `Bearer ${ENV.GROQ_API_KEY}` },
             body: {
@@ -50,10 +50,7 @@ const providers = {
                 max_completion_tokens: maxTokens,
                 temperature: 0.4,
                 ...(ENV.GROQ_MODEL.startsWith("openai/gpt-oss") ? { reasoning_effort: "low" } : {}),
-                messages: [
-                    { role: "system", content: system },
-                    { role: "user", content: prompt },
-                ],
+                messages: [{ role: "system", content: system }, ...messages],
             },
         }),
         parse: (data) => {
@@ -63,12 +60,12 @@ const providers = {
         },
     },
     gemini: {
-        request: ({ system, prompt, maxTokens }) => ({
+        request: ({ system, messages, maxTokens }) => ({
             url: `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(ENV.GEMINI_MODEL)}:streamGenerateContent?alt=sse`,
             headers: { "x-goog-api-key": ENV.GEMINI_API_KEY },
             body: {
                 systemInstruction: { parts: [{ text: system }] },
-                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                contents: messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
                 generationConfig: { maxOutputTokens: maxTokens, temperature: 0.4 },
             },
         }),
@@ -83,14 +80,17 @@ const providers = {
 };
 
 /**
- * Streams generated text. Calls onText per chunk; resolves with { blocked } when finished.
+ * Streams generated text. Pass either `prompt` (single user turn) or `messages`
+ * ([{ role: "user" | "assistant", content }]) for multi-turn chats.
+ * Calls onText per chunk; resolves with { blocked } when finished.
  * Throws AiError on HTTP/network failures. Abort with `signal`.
  */
-export async function streamText({ system, prompt, maxTokens = 1500 }, { onText, signal } = {}) {
+export async function streamText({ system, prompt, messages, maxTokens = 1500 }, { onText, signal } = {}) {
     const name = getProvider();
     if (!name) throw new AiError("No AI provider configured", 503);
     const provider = providers[name];
-    const { url, headers, body } = provider.request({ system, prompt, maxTokens });
+    const turns = messages ?? [{ role: "user", content: prompt }];
+    const { url, headers, body } = provider.request({ system, messages: turns, maxTokens });
 
     const timeout = AbortSignal.timeout(TIMEOUT_MS);
     const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
